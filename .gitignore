@@ -3,3 +3,6 @@ build
 dist
 *.spec
 __pycache__
+test.py
+ro_script.zip
+main.exe

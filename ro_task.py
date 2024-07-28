@@ -2,9 +2,23 @@ import autoit
 import time
 import easyocr
 import numpy as np
+import torch
 
 from python_imagesearch.imagesearch import imagesearch
 from PIL import ImageGrab
+
+
+# Modifying the easyocr.Reader to use weights_only=True in torch.load
+original_torch_load = torch.load
+
+
+def patched_torch_load(f, *args, **kwargs):
+    if 'weights_only' not in kwargs:
+        kwargs['weights_only'] = True
+    return original_torch_load(f, *args, **kwargs)
+
+
+torch.load = patched_torch_load
 
 
 class ROTask():
@@ -118,6 +132,10 @@ class ROTask():
         if msg_fire_lake_pos[0] == -1:
             print("no mission msg")
             return
+        else:
+            print("no fire lake npc and try to move")
+            player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
+            self._mouse_click(player_hp_pos[0]-10, player_hp_pos[1]+50, button="left")
 
         # enter the mission
         npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
@@ -146,6 +164,7 @@ class ROTask():
         # check if player is in the fire lake map
         map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.92)
         if map_fire_lake_pos[0] == -1:
+            # in the fire lake map
             # enter the mission
             npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
             if npc_fire_lake_pos[0] != -1:
@@ -157,26 +176,27 @@ class ROTask():
                 player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
                 self._mouse_click(player_hp_pos[0]-10, player_hp_pos[1]+50, button="left")
                 return
-
-        # execute skill to kill the monster
-        map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)
-        if map_fire_lake_tower_pos[0] != -1:
-            self._send_key("d")
-            for i in range(3):
-                self._send_key("w")
-                self._mouse_click(
-                    map_fire_lake_tower_pos[0]-180,
-                    map_fire_lake_tower_pos[1]+90,
-                    button="left")
-                time.sleep(0.3)
-
-            # talk to monster
-            self._mouse_click(
-                map_fire_lake_tower_pos[0]-200,
-                map_fire_lake_tower_pos[1]+10,
-                button="right")
-            time.sleep(0.3)
-            self._send_key("{SPACE}", clicks=2)
-            time.sleep(2)
         else:
-            print("not in fire lake tower map")
+            # not in the fire lake map
+            # execute skill to kill the monster
+            map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)
+            if map_fire_lake_tower_pos[0] != -1:
+                self._send_key("d")
+                for i in range(3):
+                    self._send_key("w")
+                    self._mouse_click(
+                        map_fire_lake_tower_pos[0]-180,
+                        map_fire_lake_tower_pos[1]+90,
+                        button="left")
+                    time.sleep(0.3)
+
+                # talk to monster
+                self._mouse_click(
+                    map_fire_lake_tower_pos[0]-200,
+                    map_fire_lake_tower_pos[1]+10,
+                    button="right")
+                time.sleep(0.3)
+                self._send_key("{SPACE}", clicks=2)
+                time.sleep(2)
+            else:
+                print("not in fire lake tower map")

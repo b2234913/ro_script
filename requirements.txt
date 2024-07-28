@@ -1,0 +1,6 @@
+keyboard
+PyAutoIt
+pillow
+python-imagesearch
+easyocr
+pyinstaller

@@ -1,0 +1,5 @@
+mouse
+build
+dist
+*.spec
+__pycache__

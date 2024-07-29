@@ -157,7 +157,7 @@ class ROTask():
             if npc_shop_pos[0] == -1:
                 logging.info("no shop npc")
                 return
-            self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right")
+            self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right", clicks=2)
 
             # sell all items
             self._send_key("{DOWN}", clicks=7)
@@ -172,7 +172,7 @@ class ROTask():
                 self._send_key("!1")
                 return
 
-            self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right")
+            self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right", clicks=2)
             self._send_key("{SPACE}", clicks=3)
             time.sleep(2)
 
@@ -204,18 +204,21 @@ class ROTask():
         if msg_fire_lake_pos[0] == -1:
             logging.info("no mission msg")
             return
-        else:
-            logging.info("no fire lake npc and try to move")
-            player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-            self._mouse_click(player_hp_pos[0]-10, player_hp_pos[1]+50, button="left")
 
         # enter the mission
         npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
-        if npc_fire_lake_pos[0] == -1:
-            logging.info("no fire lake npc")
-            return
-        self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right")
-        self._send_key("{SPACE}")
+        if npc_fire_lake_pos[0] != -1:
+            logging.info("enter fire lake mission")
+            self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
+            self._send_key("{SPACE}")
+        else:
+            logging.info("no fire lake npc and try click the player hp")
+            player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
+            self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right")
+            self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right")
+            self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right")
+            self._send_key("{SPACE}")
+        time.sleep(1)
 
     def make_fire_lake_mission(self):
         """ this script is used to make the fire lake mission
@@ -240,7 +243,7 @@ class ROTask():
             # enter the mission
             npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
             if npc_fire_lake_pos[0] != -1:
-                self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right")
+                self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
                 self._send_key("{SPACE}")
                 time.sleep(2)
             else:
@@ -266,7 +269,7 @@ class ROTask():
                 self._mouse_click(
                     map_fire_lake_tower_pos[0]-200,
                     map_fire_lake_tower_pos[1]+10,
-                    button="right")
+                    button="right", clicks=2)
                 time.sleep(0.3)
                 self._send_key("{SPACE}", clicks=2)
                 time.sleep(2)

@@ -16,7 +16,7 @@ main:
 
 package:
 	@echo Packaging files into $(ZIP_FILE)...
-	powershell -NoProfile -Command "Compress-Archive -Path 'lib', 'dist/main.exe', 'start.bat', 'photo' -DestinationPath '$(ZIP_FILE)' -Force"
+	powershell -NoProfile -Command "Compress-Archive -Path 'lib', 'dist/main.exe', 'start.bat', 'photo', 'clean.bat' -DestinationPath '$(ZIP_FILE)' -Force"
 
 # Clean up build files
 clean:

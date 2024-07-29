@@ -42,6 +42,17 @@ class ROTask():
             autoit.mouse_click(button)
         self._reset_mouse_pos()
 
+    def _mouse_left_drag(self, x1, y1, x2, y2):
+        autoit.mouse_move(x1, y1, speed=5)
+        time.sleep(0.2)
+        autoit.mouse_down("left")
+        time.sleep(0.2)
+        autoit.mouse_move(x2, y2, speed=5)
+        time.sleep(0.2)
+        autoit.mouse_up("left")
+        time.sleep(0.2)
+        self._reset_mouse_pos()
+
     def _send_key(self, key, clicks=1, delay_time=None):
         if delay_time is None:
             delay_time = self.send_key_delay_time
@@ -151,14 +162,31 @@ class ROTask():
         if npc_shop_pos[0] != -1:
             logging.info("find shop bar and sell all items")
             self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right", clicks=2)
-            # sell all items
             self._send_key("{DOWN}", clicks=7)
             self._send_key("{SPACE}")
             self._send_key("{DOWN}")
             self._send_key("{SPACE}", clicks=2)
 
+            logging.info("start to buy red packet")
+            self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right", clicks=2)
+            self._send_key("{SPACE}")
+            time.sleep(1)
+            shop_item_100_million_pos = imagesearch("photo/shop_item_100_million.bmp", precision=0.92)
+            logging.debug(f"shop_item_100_million_pos: {shop_item_100_million_pos}")
+            if shop_item_100_million_pos[0] != -1:
+                logging.info("drag red packet into shopping cart")
+                shop_shopping_cart_pos = imagesearch("photo/shop_shopping_cart.bmp", precision=0.92)
+                logging.debug(f"shop_shopping_cart_pos: {shop_shopping_cart_pos}")
+                for i in range(1):
+                    self._mouse_left_drag(shop_item_100_million_pos[0]+10, shop_item_100_million_pos[1]+5,
+                                          shop_shopping_cart_pos[0]+40, shop_shopping_cart_pos[1]+40)
+                    self._send_key("{ENTER}")
+                logging.info("confirm buy red packet")
+                shop_buy_or_cancel_button_pos = imagesearch("photo/shop_buy_or_cancel_button.bmp", precision=0.92)
+                logging.debug(f"shop_buy_or_cancel_button_pos: {shop_buy_or_cancel_button_pos}")
+                self._mouse_click(shop_buy_or_cancel_button_pos[0]+10, shop_buy_or_cancel_button_pos[1]+10, button="left")
+
             logging.info("tp to money map")
-            # tp to money map
             npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
             if npc_tp_pos[0] != -1:
 
@@ -167,7 +195,6 @@ class ROTask():
 
             time.sleep(2)
 
-            # boton
             logging.info("enable auto attack")
             self._send_key("!2")
             self._send_key("{SPACE}", clicks=2)
@@ -200,9 +227,9 @@ class ROTask():
         else:
             logging.info("no fire lake npc and try click the player hp")
             player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-            self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right")
-            self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right")
-            self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right")
+            self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right", clicks=2)
             self._send_key("{SPACE}")
         time.sleep(1)
 
@@ -226,9 +253,9 @@ class ROTask():
             else:
                 logging.info("no fire lake npc and try click the player hp")
                 player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-                self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right")
-                self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right")
-                self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right")
+                self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right", clicks=2)
                 self._send_key("{SPACE}")
         else:
             # in the fire lake map

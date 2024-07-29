@@ -227,37 +227,35 @@ class ROTask():
         3. check if player is in the fire lake map
         4. execute skill to kill the monster
         """
-
-        self._check_verify_code_with_api()
-        time.sleep(0.3)
-
-        # check if there is a mission
-        msg_fire_lake_pos = imagesearch("photo/msg_fire_lake.bmp", precision=0.92)
-        if msg_fire_lake_pos[0] != -1:
-            logging.info("already have fire lake mission")
-
         # check if player is in the fire lake map
         map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.92)
         if map_fire_lake_pos[0] == -1:
-            # in the fire lake map
+            # not in the fire lake map
+
             # enter the mission
             npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
             if npc_fire_lake_pos[0] != -1:
                 self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
                 self._send_key("{SPACE}")
-                time.sleep(2)
             else:
-                logging.info("no fire lake npc and try to move")
+                logging.info("no fire lake npc and try click the player hp")
                 player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-                self._mouse_click(player_hp_pos[0]-10, player_hp_pos[1]+50, button="left")
-                return
+                self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right")
+                self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right")
+                self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right")
+                self._send_key("{SPACE}")
         else:
-            # not in the fire lake map
+            # in the fire lake map
+
+            # check if there is a verify code
+            self._check_verify_code_with_api()
+            time.sleep(0.3)
+
             # execute skill to kill the monster
             map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)
             if map_fire_lake_tower_pos[0] != -1:
                 self._send_key("d")
-                for i in range(3):
+                for i in range(1):
                     self._send_key("w")
                     self._mouse_click(
                         map_fire_lake_tower_pos[0]-180,
@@ -265,13 +263,16 @@ class ROTask():
                         button="left")
                     time.sleep(0.3)
 
-                # talk to monster
-                self._mouse_click(
-                    map_fire_lake_tower_pos[0]-200,
-                    map_fire_lake_tower_pos[1]+10,
-                    button="right", clicks=2)
-                time.sleep(0.3)
-                self._send_key("{SPACE}", clicks=2)
-                time.sleep(2)
+                # check if player is in the fire lake map
+                map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.92)
+                if map_fire_lake_pos != -1:
+                    # talk to monster
+                    self._mouse_click(
+                        map_fire_lake_tower_pos[0]-200,
+                        map_fire_lake_tower_pos[1]+10,
+                        button="right", clicks=2)
+                    time.sleep(0.3)
+                    self._send_key("{SPACE}", clicks=2)
             else:
                 logging.info("not in fire lake tower map")
+        time.sleep(2)

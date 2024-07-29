@@ -233,9 +233,9 @@ class ROTask():
         else:
             logging.info("no fire lake npc and try click the player hp")
             player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-            self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right", clicks=2)
-            self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right", clicks=2)
-            self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0]-30, player_hp_pos[1]+40, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0], player_hp_pos[1]+40, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0]+30, player_hp_pos[1]+40, button="right", clicks=2)
             self._send_key("{SPACE}")
         time.sleep(1)
 
@@ -246,7 +246,7 @@ class ROTask():
         3. if yes, execute skill to kill the monster
         """
         # check if player is in the fire lake map
-        map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.92)
+        map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.95)
         if map_fire_lake_pos[0] == -1:
             # not in the fire lake map
 
@@ -259,9 +259,9 @@ class ROTask():
             else:
                 logging.info("no fire lake npc and try click the player hp")
                 player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-                self._mouse_click(player_hp_pos[0], player_hp_pos[1]+20, button="right", clicks=2)
-                self._mouse_click(player_hp_pos[0]+20, player_hp_pos[1]+20, button="right", clicks=2)
-                self._mouse_click(player_hp_pos[0]+40, player_hp_pos[1]+20, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0]-30, player_hp_pos[1]+40, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0], player_hp_pos[1]+40, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0]+30, player_hp_pos[1]+40, button="right", clicks=2)
                 self._send_key("{SPACE}")
         else:
             # in the fire lake map

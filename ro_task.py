@@ -43,14 +43,14 @@ class ROTask():
         self._reset_mouse_pos()
 
     def _mouse_left_drag(self, x1, y1, x2, y2):
-        autoit.mouse_move(x1, y1, speed=5)
-        time.sleep(0.2)
+        autoit.mouse_move(x1, y1, speed=20)
+        time.sleep(0.5)
         autoit.mouse_down("left")
-        time.sleep(0.2)
-        autoit.mouse_move(x2, y2, speed=5)
-        time.sleep(0.2)
+        time.sleep(0.5)
+        autoit.mouse_move(x2, y2, speed=20)
+        time.sleep(0.5)
         autoit.mouse_up("left")
-        time.sleep(0.2)
+        time.sleep(0.5)
         self._reset_mouse_pos()
 
     def _send_key(self, key, clicks=1, delay_time=None):
@@ -189,18 +189,24 @@ class ROTask():
             logging.info("tp to money map")
             npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
             if npc_tp_pos[0] != -1:
-
                 self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right", clicks=2)
                 self._send_key("{SPACE}", clicks=3)
+            else:
+                logging.error("no tp npc and run @load")
+                self._send_key("!1")
 
             time.sleep(2)
 
-            logging.info("enable auto attack")
-            self._send_key("!2")
-            self._send_key("{SPACE}", clicks=2)
+            # make sure player is not in the loading map
+            map_load_pos = imagesearch("photo/map_load.bmp", precision=0.92)
+            logging.debug("map_load_pos: %s", map_load_pos)
+            if map_load_pos[0] == -1:
+                logging.info("enable auto attack")
+                self._send_key("!2")
+                self._send_key("{SPACE}", clicks=2)
 
-            # check if there is a verify code
-            self._check_verify_code_with_api()
+                # check if there is a verify code
+                self._check_verify_code_with_api()
         else:
             logging.debug("no shop bar")
 

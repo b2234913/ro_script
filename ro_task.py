@@ -63,8 +63,8 @@ class ROTask():
             x, y = verify_code_pos
             logging.debug(f"Verify code position: {x}, {y}")
 
-            width = 30
-            height = 15
+            width = 35
+            height = 20
 
             # Capture the image of the verification code area
             bbox = (x, y + 20, x + width, y + 20 + height)
@@ -90,6 +90,7 @@ class ROTask():
                 if 'numbers_only' in response_data:
                     verify_code_text = response_data['numbers_only']
                     logging.info(f"Recognized verify code: {verify_code_text}")
+                    self._send_key("{BACKSPACE}", clicks=5)
                     self._send_key(verify_code_text)
                     self._send_key("{ENTER}")
                 else:
@@ -142,43 +143,55 @@ class ROTask():
 
     def make_money(self):
         """ this script is used to make money in the game
-        1. check if there is a verify code
-        2. check if there is a shop npc
-        3. sell all items
-        4. tp to make money map
-        5. execute skill to make money
+        1. check if player is in the money map
+        2. if not, go to the money map
+        3. if yes, execute skill to kill the monster
         """
 
-        self._check_verify_code_with_api()
-        time.sleep(0.3)
+        map_money_pos = imagesearch("photo/map_money.bmp", precision=0.92)
+        if map_money_pos[0] == -1:
+            logging.info("not in money map")
 
-        # find the shop bar position
-        npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
-        if npc_shop_pos[0] == -1:
-            logging.info("no shop npc")
-            return
+            # find the shop bar position
+            npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
+            if npc_shop_pos[0] == -1:
+                logging.error("no shop npc")
+                return
+            self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right")
 
-        self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right")
+            # sell all items
+            self._send_key("{DOWN}", clicks=7)
+            self._send_key("{SPACE}")
+            self._send_key("{DOWN}")
+            self._send_key("{SPACE}", clicks=2)
 
-        # sell all items
-        self._send_key("{DOWN}", clicks=7)
-        self._send_key("{SPACE}")
-        self._send_key("{DOWN}")
-        self._send_key("{SPACE}", clicks=2)
+            # tp to make money map
+            npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
+            if npc_tp_pos[0] == -1:
+                logging.info("no tp npc")
+                self._send_key("!1")
+                return
 
-        # tp to make money map
-        npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
-        if npc_tp_pos[0] == -1:
-            logging.info("no tp npc")
-            return
+            self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right")
+            self._send_key("{SPACE}", clicks=3)
+            time.sleep(2)
 
-        self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right")
-        self._send_key("{SPACE}", clicks=3)
-        time.sleep(1.5)
+        else:
+            logging.info("in money map")
+            time.sleep(1)
 
-        # boton
-        self._send_key("!2")
-        self._send_key("{SPACE}", clicks=2)
+        # if player not change position
+        current_map_money_pos = imagesearch("photo/map_money.bmp", precision=1)
+        if current_map_money_pos != -1:
+            logging.info("player not change position")
+            # boton
+            self._send_key("!2")
+
+            # check if there is a verify code
+            self._check_verify_code_with_api()
+            time.sleep(0.3)
+
+            self._send_key("{SPACE}", clicks=2)
 
     def enter_fire_lake_mission(self):
         """ this script is used to enter the fire lake mission

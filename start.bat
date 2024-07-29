@@ -2,6 +2,9 @@
 :: Change to the directory where the script is located
 cd /d %~dp0
 
+:: Clean the directory before running the script
+cmd /c clean.bat
+
 :: Check for administrator privileges
 NET SESSION >nul 2>&1
 IF %ERRORLEVEL% NEQ 0 (

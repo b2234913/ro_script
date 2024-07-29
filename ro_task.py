@@ -1,12 +1,16 @@
+import logging
+import requests
 import autoit
 import time
 import easyocr
 import numpy as np
 import torch
 
+from io import BytesIO
 from python_imagesearch.imagesearch import imagesearch
 from PIL import ImageGrab
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Modifying the easyocr.Reader to use weights_only=True in torch.load
 original_torch_load = torch.load
@@ -47,14 +51,17 @@ class ROTask():
             time.sleep(delay_time / 1000)
             autoit.send(key)
 
-    def _check_verify_code(self):
+    def _check_verify_code_with_api(self):
+        logging.info("Starting verification code check.")
+
         verify_code_pos = imagesearch("photo/msg_verify_code.bmp", precision=0.9)
+        logging.debug(f"Image search result: {verify_code_pos}")
+
         if verify_code_pos[0] != -1:
-            print("verify code needed")
+            logging.info("Verify code needed")
 
             x, y = verify_code_pos
-
-            print("Verify code position:", x, y)
+            logging.debug(f"Verify code position: {x}, {y}")
 
             width = 30
             height = 15
@@ -62,24 +69,76 @@ class ROTask():
             # Capture the image of the verification code area
             bbox = (x, y + 20, x + width, y + 20 + height)
             screenshot = ImageGrab.grab(bbox)
+            logging.debug(f"Screenshotted area: {bbox}")
+
+            # Save the screenshot to a BytesIO object
+            img_byte_arr = BytesIO()
+            screenshot.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+
+            # Send the image to the OCR API
+            url = "http://100.105.149.4:5000/ocr"
+            files = {
+                'file': ('verify_code.png', img_byte_arr, 'image/png')
+            }
+
+            response = requests.post(url, files=files)
+            logging.debug(f"API response: {response.text}")
+
+            if response.status_code == 200:
+                response_data = response.json()
+                if 'numbers_only' in response_data:
+                    verify_code_text = response_data['numbers_only']
+                    logging.info(f"Recognized verify code: {verify_code_text}")
+                    self._send_key(verify_code_text)
+                    self._send_key("{ENTER}")
+                else:
+                    logging.warning("No text recognized in the response")
+            else:
+                logging.error(f"Failed to call OCR API: {response.status_code}")
+
+    def _check_verify_code(self):
+        logging.info("Starting verification code check.")
+
+        verify_code_pos = imagesearch("photo/msg_verify_code.bmp", precision=0.9)
+        logging.debug(f"Image search result: {verify_code_pos}")
+
+        if verify_code_pos[0] != -1:
+            logging.info("Verify code needed")
+
+            x, y = verify_code_pos
+            logging.debug(f"Verify code position: {x}, {y}")
+
+            width = 30
+            height = 15
+
+            # Capture the image of the verification code area
+            bbox = (x, y + 20, x + width, y + 20 + height)
+            screenshot = ImageGrab.grab(bbox)
+            logging.debug(f"Screenshotted area: {bbox}")
 
             # Convert the image to grayscale
             gray_image = screenshot.convert('L')
+            logging.debug("Image converted to grayscale")
 
             # Convert the PIL image to a NumPy array
             gray_image_np = np.array(gray_image)
+            logging.debug("Image converted to NumPy array")
 
             # You can add other languages as needed, such as 'ch_sim' for Chinese recognition
             reader = easyocr.Reader(['en'])
+            logging.info("Initialized EasyOCR reader")
+
             result = reader.readtext(gray_image_np)
+            logging.debug(f"OCR result: {result}")
 
             if result:
                 verify_code_text = result[0][1]
-                print("Recognized verify code:", verify_code_text)
+                logging.info(f"Recognized verify code: {verify_code_text}")
                 self._send_key(verify_code_text)
                 self._send_key("{ENTER}")
             else:
-                print("No text recognized")
+                logging.warning("No text recognized")
 
     def make_money(self):
         """ this script is used to make money in the game
@@ -90,13 +149,13 @@ class ROTask():
         5. execute skill to make money
         """
 
-        self._check_verify_code()
+        self._check_verify_code_with_api()
         time.sleep(0.3)
 
         # find the shop bar position
         npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
         if npc_shop_pos[0] == -1:
-            print("no shop npc")
+            logging.info("no shop npc")
             return
 
         self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right")
@@ -110,7 +169,7 @@ class ROTask():
         # tp to make money map
         npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
         if npc_tp_pos[0] == -1:
-            print("no tp npc")
+            logging.info("no tp npc")
             return
 
         self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right")
@@ -130,17 +189,17 @@ class ROTask():
         # check if there is a mission
         msg_fire_lake_pos = imagesearch("photo/msg_fire_lake.bmp", precision=0.92)
         if msg_fire_lake_pos[0] == -1:
-            print("no mission msg")
+            logging.info("no mission msg")
             return
         else:
-            print("no fire lake npc and try to move")
+            logging.info("no fire lake npc and try to move")
             player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
             self._mouse_click(player_hp_pos[0]-10, player_hp_pos[1]+50, button="left")
 
         # enter the mission
         npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
         if npc_fire_lake_pos[0] == -1:
-            print("no fire lake npc")
+            logging.info("no fire lake npc")
             return
         self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right")
         self._send_key("{SPACE}")
@@ -153,13 +212,13 @@ class ROTask():
         4. execute skill to kill the monster
         """
 
-        self._check_verify_code()
+        self._check_verify_code_with_api()
         time.sleep(0.3)
 
         # check if there is a mission
         msg_fire_lake_pos = imagesearch("photo/msg_fire_lake.bmp", precision=0.92)
         if msg_fire_lake_pos[0] != -1:
-            print("already have fire lake mission")
+            logging.info("already have fire lake mission")
 
         # check if player is in the fire lake map
         map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.92)
@@ -172,7 +231,7 @@ class ROTask():
                 self._send_key("{SPACE}")
                 time.sleep(2)
             else:
-                print("no fire lake npc and try to move")
+                logging.info("no fire lake npc and try to move")
                 player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
                 self._mouse_click(player_hp_pos[0]-10, player_hp_pos[1]+50, button="left")
                 return
@@ -199,4 +258,4 @@ class ROTask():
                 self._send_key("{SPACE}", clicks=2)
                 time.sleep(2)
             else:
-                print("not in fire lake tower map")
+                logging.info("not in fire lake tower map")

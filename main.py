@@ -1,3 +1,4 @@
+import logging
 import argparse
 import keyboard
 import os
@@ -6,6 +7,8 @@ from ro_task import ROTask
 import shutil
 import atexit
 import sys
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def stop_script():
@@ -19,7 +22,7 @@ def remove_meipass():
         try:
             shutil.rmtree(sys._MEIPASS)
         except Exception as e:
-            print(f"Error removing temporary directory: {e}")
+            logging.error(f"Error removing temporary directory: {e}")
 
 
 def main(task, send_key_delay_time):
@@ -41,7 +44,7 @@ def main(task, send_key_delay_time):
             ro_task.make_fire_lake_mission()
             time.sleep(1)  # Add delay to prevent too frequent task calls
     else:
-        print("Unknown task. Available tasks are: make_money, enter_fire_lake, make_fire_lake_mission")
+        logging.error("Unknown task. Available tasks are: make_money, enter_fire_lake, make_fire_lake_mission")
 
 
 if __name__ == "__main__":

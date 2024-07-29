@@ -8,8 +8,6 @@ import shutil
 import atexit
 import sys
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 def stop_script():
     # Immediately terminate the Python interpreter
@@ -61,9 +59,19 @@ if __name__ == "__main__":
     parser.add_argument(
         '-d', '--delay',
         type=int,
-        default=500,
+        default=350,
         help="The delay time (in milliseconds) for sending keys"
+    )
+    parser.add_argument(
+        '-l', '--log-level',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        default='INFO',
+        help="Set the logging level (default: INFO)"
     )
 
     args = parser.parse_args()
+
+    # Set the logging level based on the argument
+    logging.basicConfig(level=getattr(logging, args.log_level), format='%(asctime)s - %(levelname)s - %(message)s')
+
     main(args.task, args.delay)

@@ -10,7 +10,7 @@ from io import BytesIO
 from python_imagesearch.imagesearch import imagesearch
 from PIL import ImageGrab
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Modifying the easyocr.Reader to use weights_only=True in torch.load
 original_torch_load = torch.load
@@ -55,13 +55,13 @@ class ROTask():
         logging.info("Starting verification code check.")
 
         verify_code_pos = imagesearch("photo/msg_verify_code.bmp", precision=0.9)
-        logging.debug(f"Image search result: {verify_code_pos}")
+        logging.info(f"Image search result: {verify_code_pos}")
 
         if verify_code_pos[0] != -1:
             logging.info("Verify code needed")
 
             x, y = verify_code_pos
-            logging.debug(f"Verify code position: {x}, {y}")
+            logging.info(f"Verify code position: {x}, {y}")
 
             width = 35
             height = 20
@@ -69,7 +69,7 @@ class ROTask():
             # Capture the image of the verification code area
             bbox = (x, y + 20, x + width, y + 20 + height)
             screenshot = ImageGrab.grab(bbox)
-            logging.debug(f"Screenshotted area: {bbox}")
+            logging.info(f"Screenshotted area: {bbox}")
 
             # Save the screenshot to a BytesIO object
             img_byte_arr = BytesIO()
@@ -83,7 +83,7 @@ class ROTask():
             }
 
             response = requests.post(url, files=files)
-            logging.debug(f"API response: {response.text}")
+            logging.info(f"API response: {response.text}")
 
             if response.status_code == 200:
                 response_data = response.json()
@@ -102,13 +102,13 @@ class ROTask():
         logging.info("Starting verification code check.")
 
         verify_code_pos = imagesearch("photo/msg_verify_code.bmp", precision=0.9)
-        logging.debug(f"Image search result: {verify_code_pos}")
+        logging.info(f"Image search result: {verify_code_pos}")
 
         if verify_code_pos[0] != -1:
             logging.info("Verify code needed")
 
             x, y = verify_code_pos
-            logging.debug(f"Verify code position: {x}, {y}")
+            logging.info(f"Verify code position: {x}, {y}")
 
             width = 30
             height = 15
@@ -116,22 +116,22 @@ class ROTask():
             # Capture the image of the verification code area
             bbox = (x, y + 20, x + width, y + 20 + height)
             screenshot = ImageGrab.grab(bbox)
-            logging.debug(f"Screenshotted area: {bbox}")
+            logging.info(f"Screenshotted area: {bbox}")
 
             # Convert the image to grayscale
             gray_image = screenshot.convert('L')
-            logging.debug("Image converted to grayscale")
+            logging.info("Image converted to grayscale")
 
             # Convert the PIL image to a NumPy array
             gray_image_np = np.array(gray_image)
-            logging.debug("Image converted to NumPy array")
+            logging.info("Image converted to NumPy array")
 
             # You can add other languages as needed, such as 'ch_sim' for Chinese recognition
             reader = easyocr.Reader(['en'])
             logging.info("Initialized EasyOCR reader")
 
             result = reader.readtext(gray_image_np)
-            logging.debug(f"OCR result: {result}")
+            logging.info(f"OCR result: {result}")
 
             if result:
                 verify_code_text = result[0][1]
@@ -155,7 +155,7 @@ class ROTask():
             # find the shop bar position
             npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
             if npc_shop_pos[0] == -1:
-                logging.error("no shop npc")
+                logging.info("no shop npc")
                 return
             self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right")
 

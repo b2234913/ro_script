@@ -233,9 +233,9 @@ class ROTask():
         else:
             logging.info("no fire lake npc and try click the player hp")
             player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-            self._mouse_click(player_hp_pos[0]-30, player_hp_pos[1]+40, button="right", clicks=2)
-            self._mouse_click(player_hp_pos[0], player_hp_pos[1]+40, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0]-15, player_hp_pos[1]+40, button="right", clicks=2)
             self._mouse_click(player_hp_pos[0]+30, player_hp_pos[1]+40, button="right", clicks=2)
+            self._mouse_click(player_hp_pos[0]+50, player_hp_pos[1]+40, button="right", clicks=2)
             self._send_key("{SPACE}")
         time.sleep(1)
 
@@ -259,9 +259,9 @@ class ROTask():
             else:
                 logging.info("no fire lake npc and try click the player hp")
                 player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-                self._mouse_click(player_hp_pos[0]-30, player_hp_pos[1]+40, button="right", clicks=2)
-                self._mouse_click(player_hp_pos[0], player_hp_pos[1]+40, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0]-15, player_hp_pos[1]+40, button="right", clicks=2)
                 self._mouse_click(player_hp_pos[0]+30, player_hp_pos[1]+40, button="right", clicks=2)
+                self._mouse_click(player_hp_pos[0]+50, player_hp_pos[1]+40, button="right", clicks=2)
                 self._send_key("{SPACE}")
         else:
             # in the fire lake map

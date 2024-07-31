@@ -1,4 +1,7 @@
 @echo off
+mode con: cols=50 lines=40
+
+
 :: Change to the directory where the script is located
 cd /d %~dp0
 

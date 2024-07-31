@@ -150,6 +150,11 @@ class ROTask():
             else:
                 logging.warning("No text recognized")
 
+    def _enable_auto_attack(self):
+        logging.info("enable auto attack")
+        self._send_key("z")
+        self._send_key("{SPACE}", clicks=2)
+
     def make_money(self):
         """ this script is used to make money in the game
         1. check if player is in the money map
@@ -157,18 +162,18 @@ class ROTask():
         3. if yes, execute skill to kill the monster
         """
 
-        # find the shop bar position
-        npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
-        if npc_shop_pos[0] != -1:
-            logging.info("find shop bar and sell all items")
-            self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right", clicks=2)
+        def quick_sell_item(shop_pos):
+            logging.info("quick sell item")
+            self._mouse_click(shop_pos[0], shop_pos[1], button="right", clicks=2)
             self._send_key("{DOWN}", clicks=7)
             self._send_key("{SPACE}")
             self._send_key("{DOWN}")
             self._send_key("{SPACE}", clicks=2)
 
+        def buy_cheque(shop_pos):
+            # npc_shop_pos[0]+50, npc_shop_pos[1]+50
             logging.info("start to buy red packet")
-            self._mouse_click(npc_shop_pos[0]+50, npc_shop_pos[1]+50, button="right", clicks=2)
+            self._mouse_click(shop_pos[0], shop_pos[1], button="right", clicks=2)
             self._send_key("{SPACE}")
             time.sleep(1)
             shop_item_100_million_pos = imagesearch("photo/shop_item_100_million.bmp", precision=0.92)
@@ -187,25 +192,34 @@ class ROTask():
                 logging.debug(f"shop_buy_or_cancel_button_pos: {shop_buy_or_cancel_button_pos}")
                 self._mouse_click(shop_buy_or_cancel_button_pos[0]+10, shop_buy_or_cancel_button_pos[1]+10, button="left")
 
-            logging.info("tp to money map")
+        def tp_to_money_map():
             npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
             if npc_tp_pos[0] != -1:
-                self._mouse_click(npc_tp_pos[0]+70, npc_tp_pos[1]+50, button="right", clicks=2)
+                npc_tp_pos = (npc_tp_pos[0]+70, npc_tp_pos[1]+50)
+                self._mouse_click(npc_tp_pos[0], npc_tp_pos[1], button="right", clicks=2)
                 self._send_key("{SPACE}", clicks=3)
+                time.sleep(2)
+                return True
             else:
                 logging.error("no tp npc and run @load")
                 self._send_key("`")
+                return False
 
-            time.sleep(2)
+        # find the shop bar position
+        npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
+        if npc_shop_pos[0] != -1:
+            npc_shop_pos = (npc_shop_pos[0]+50, npc_shop_pos[1]+50)
 
-            # make sure player is not in the loading map
-            map_load_pos = imagesearch("photo/map_load.bmp", precision=0.92)
-            logging.debug("map_load_pos: %s", map_load_pos)
-            if map_load_pos[0] == -1:
-                logging.info("enable auto attack")
-                self._send_key("z")
-                self._send_key("{SPACE}", clicks=2)
+            quick_sell_item(npc_shop_pos)
+            buy_cheque(npc_shop_pos)
 
+            logging.info("tp to money map")
+
+            tp_to_money_map()
+
+            player_in_unknow_map_pos = imagesearch("photo/player_in_unknow_map.bmp", precision=0.92)
+            if player_in_unknow_map_pos[0] != -1:
+                self._enable_auto_attack()
                 # check if there is a verify code
                 self._check_verify_code_with_api()
         else:

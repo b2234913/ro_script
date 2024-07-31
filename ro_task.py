@@ -182,6 +182,7 @@ class ROTask():
                                           shop_shopping_cart_pos[0]+40, shop_shopping_cart_pos[1]+40)
                     self._send_key("{ENTER}")
                 logging.info("confirm buy red packet")
+
                 shop_buy_or_cancel_button_pos = imagesearch("photo/shop_buy_or_cancel_button.bmp", precision=0.92)
                 logging.debug(f"shop_buy_or_cancel_button_pos: {shop_buy_or_cancel_button_pos}")
                 self._mouse_click(shop_buy_or_cancel_button_pos[0]+10, shop_buy_or_cancel_button_pos[1]+10, button="left")
@@ -189,11 +190,11 @@ class ROTask():
             logging.info("tp to money map")
             npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
             if npc_tp_pos[0] != -1:
-                self._mouse_click(npc_tp_pos[0]+50, npc_tp_pos[1]+50, button="right", clicks=2)
+                self._mouse_click(npc_tp_pos[0]+70, npc_tp_pos[1]+50, button="right", clicks=2)
                 self._send_key("{SPACE}", clicks=3)
             else:
                 logging.error("no tp npc and run @load")
-                self._send_key("!1")
+                self._send_key("`")
 
             time.sleep(2)
 
@@ -202,7 +203,7 @@ class ROTask():
             logging.debug("map_load_pos: %s", map_load_pos)
             if map_load_pos[0] == -1:
                 logging.info("enable auto attack")
-                self._send_key("!2")
+                self._send_key("z")
                 self._send_key("{SPACE}", clicks=2)
 
                 # check if there is a verify code

@@ -277,55 +277,71 @@ class ROTask():
         2. if not, enter the mission
         3. if yes, execute skill to kill the monster
         """
-        # check if player is in the fire lake map
-        map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.95)
-        if map_fire_lake_pos[0] == -1:
-            # not in the fire lake map
+        def enter_fire_lake_mission():
+            while True:
+                npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
+                if npc_fire_lake_pos[0] != -1:
+                    logging.info("enter fire lake mission")
+                    while True:
+                        self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
+                        msg_fire_lake_npc_create_pos = imagesearch("photo/msg_fire_lake_npc_create.bmp", precision=0.92)
+                        if msg_fire_lake_npc_create_pos[0] != -1:
+                            break
+                    self._send_key("{SPACE}")
 
-            # enter the mission
-            npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
-            if npc_fire_lake_pos[0] != -1:
-                logging.info("enter fire lake mission")
-                self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
-                self._send_key("{SPACE}")
-            else:
-                logging.info("no fire lake npc and try click the player hp")
-                player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-                self._mouse_click(player_hp_pos[0]-15, player_hp_pos[1]+40, button="right", clicks=2)
-                self._mouse_click(player_hp_pos[0]+30, player_hp_pos[1]+40, button="right", clicks=2)
-                self._mouse_click(player_hp_pos[0]+50, player_hp_pos[1]+40, button="right", clicks=2)
-                self._send_key("{SPACE}")
-        else:
-            # in the fire lake map
+                else:
+                    logging.info("no fire lake npc and try to move")
+                    npc_ghost_captain_pos = imagesearch("photo/npc_ghost_captain.bmp", precision=0.92)
+                    if npc_ghost_captain_pos[0] != -1:
+                        self._mouse_click(npc_ghost_captain_pos[0]-20, npc_ghost_captain_pos[1], button="left", clicks=1)
+                        self._send_key("{SPACE}")
 
-            # check if there is a verify code
-            self._check_verify_code_with_api()
+                time.sleep(1)
+                player_in_fire_lake_map_pos = imagesearch("photo/player_in_fire_lake_map.bmp", precision=0.92)
+                if player_in_fire_lake_map_pos[0] != -1:
+                    break
+
+        def execute_skill(skill_pos, times=1):
+            # buff
+            self._send_key("d")
+            # fight
+            while True:
+                for i in range(times):
+                    self._send_key("w")
+                    self._mouse_click(skill_pos[0], skill_pos[1], button="left")
+                    time.sleep(0.3)
+                player_msg_execute_skill_pos = imagesearch("photo/player_msg_execute_skill.bmp", precision=0.92)
+                if player_msg_execute_skill_pos[0] != -1:
+                    break
+
+        def talk_to_monster(monster_pos):
+            logging.info("talk to monster")
+            while True:
+                self._mouse_click(monster_pos[0], monster_pos[1], button="right", clicks=2)
+                time.sleep(0.3)
+                msg_fire_lake_monster_talking_pos = imagesearch("photo/msg_fire_lake_monster_talking.bmp", precision=0.92)
+                if msg_fire_lake_monster_talking_pos[0] != -1:
+                    break
+            self._send_key("{SPACE}", clicks=2)
             time.sleep(0.3)
+            self._check_verify_code_with_api()
 
+        # check if player is in mission map
+        player_in_unknow_map_pos = imagesearch("photo/player_in_unknow_map.bmp", precision=0.92)
+        player_in_fire_lake_map_pos = imagesearch("photo/player_in_fire_lake_map.bmp", precision=0.92)
+        if player_in_unknow_map_pos[0] != -1:
+            # not in the fire lake map
+            # enter the mission
+            enter_fire_lake_mission()
+
+        elif player_in_fire_lake_map_pos[0] != -1:
+            # in the fire lake map
             # execute skill to kill the monster
             map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)
             if map_fire_lake_tower_pos[0] != -1:
                 logging.info("execute skill to kill the monster")
-                self._send_key("d")
-                for i in range(1):
-                    self._send_key("w")
-                    self._mouse_click(
-                        map_fire_lake_tower_pos[0]-180,
-                        map_fire_lake_tower_pos[1]+90,
-                        button="left")
-                    time.sleep(0.3)
-
-                # check if player is in the fire lake map
-                map_fire_lake_pos = imagesearch("photo/map_fire_lake.bmp", precision=0.92)
-                if map_fire_lake_pos != -1:
-                    # talk to monster
-                    logging.info("talk to monster")
-                    self._mouse_click(
-                        map_fire_lake_tower_pos[0]-200,
-                        map_fire_lake_tower_pos[1]+10,
-                        button="right", clicks=2)
-                    time.sleep(0.3)
-                    self._send_key("{SPACE}", clicks=2)
+                execute_skill((map_fire_lake_tower_pos[0]-180, map_fire_lake_tower_pos[1]+90), times=1)
+                talk_to_monster((map_fire_lake_tower_pos[0]-200, map_fire_lake_tower_pos[1]+10))
             else:
                 logging.debug("not in fire lake tower map")
         time.sleep(2)

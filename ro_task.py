@@ -291,14 +291,16 @@ class ROTask():
             # buff
             self._send_key("d")
             # fight
-            while True:
+            skill_result = False
+            while skill_result != True:
                 for i in range(times):
                     self._send_key("w")
                     self._mouse_click(skill_pos[0], skill_pos[1], button="left")
                     time.sleep(0.3)
-                player_msg_execute_skill_pos = imagesearch("photo/player_msg_execute_skill.bmp", precision=0.9)
-                if player_msg_execute_skill_pos[0] != -1:
-                    break
+                for i in range(2):
+                    if imagesearch(f"photo/player_msg_execute_skill_{i}.bmp", precision=0.9)[0] != -1:
+                        skill_result = True
+                        break
 
         def talk_to_monster(monster_pos):
             logging.info("talk to monster")

@@ -20,7 +20,7 @@ IF %ERRORLEVEL% NEQ 0 (
 echo Select the task to execute:
 echo 1. make_money
 echo 2. enter_fire_lake
-echo 3. make_fire_lake_mission
+echo 3. make_fire_lake
 
 :: Get task input
 set /p task_choice="Enter the number of the task: "
@@ -31,7 +31,7 @@ if "%task_choice%"=="1" (
 ) else if "%task_choice%"=="2" (
     set task=enter_fire_lake
 ) else if "%task_choice%"=="3" (
-    set task=make_fire_lake_mission
+    set task=make_fire_lake
 ) else (
     echo Invalid choice.
     pause

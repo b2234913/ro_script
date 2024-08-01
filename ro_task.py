@@ -160,6 +160,32 @@ class ROTask():
             time.sleep(0.5)
         self._send_key("{SPACE}", clicks=2)
 
+    def _enter_fire_lake_mission(self, check_image_path):
+        logging.info("enter fire lake mission")
+        while True:
+            npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
+            if npc_fire_lake_pos[0] != -1:
+                logging.info("enter fire lake mission")
+                while True:
+                    logging.debug("right click npc fire lake")
+                    self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
+                    msg_fire_lake_npc_create_pos = imagesearch("photo/npc_confirm_or_cancel.bmp", precision=0.92)
+                    if msg_fire_lake_npc_create_pos[0] != -1:
+                        break
+                self._send_key("{SPACE}")
+
+            else:
+                logging.info("no fire lake npc and try to move")
+                npc_ghost_captain_pos = imagesearch("photo/npc_ghost_captain.bmp", precision=0.92)
+                if npc_ghost_captain_pos[0] != -1:
+                    self._mouse_click(npc_ghost_captain_pos[0]-20, npc_ghost_captain_pos[1], button="left", clicks=1)
+                    self._send_key("{SPACE}")
+
+            time.sleep(1)
+            player_in_fire_lake_map_pos = imagesearch(check_image_path, precision=0.92)
+            if player_in_fire_lake_map_pos[0] != -1:
+                break
+
     def make_money(self):
         """ this script is used to make money in the game
         1. check if player is in the money map
@@ -249,57 +275,17 @@ class ROTask():
         1. check if there is a mission
         2. enter the mission
         """
-
-        # check if there is a mission
         msg_fire_lake_pos = imagesearch("photo/msg_fire_lake.bmp", precision=0.92)
-        if msg_fire_lake_pos[0] == -1:
-            logging.debug("no mission msg")
-            return
+        player_tiler_in_unknow_map_pos = imagesearch("photo/player_tiler_in_unknow_map.bmp", precision=0.92)
+        if msg_fire_lake_pos[0] != -1 and player_tiler_in_unknow_map_pos[0] != -1:
+            self._enter_fire_lake_mission("photo/player_tiler_in_fire_lake_map.bmp")
 
-        # enter the mission
-        npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
-        if npc_fire_lake_pos[0] != -1:
-            logging.info("enter fire lake mission")
-            self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
-            self._send_key("{SPACE}")
-        else:
-            logging.info("no fire lake npc and try click the player hp")
-            player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
-            self._mouse_click(player_hp_pos[0]-15, player_hp_pos[1]+40, button="right", clicks=2)
-            self._mouse_click(player_hp_pos[0]+30, player_hp_pos[1]+40, button="right", clicks=2)
-            self._mouse_click(player_hp_pos[0]+50, player_hp_pos[1]+40, button="right", clicks=2)
-            self._send_key("{SPACE}")
-        time.sleep(1)
-
-    def make_fire_lake_mission(self):
+    def make_fire_lake(self):
         """ this script is used to make the fire lake mission
         1. check if player is in the fire lake map
         2. if not, enter the mission
         3. if yes, execute skill to kill the monster
         """
-        def enter_fire_lake_mission():
-            while True:
-                npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
-                if npc_fire_lake_pos[0] != -1:
-                    logging.info("enter fire lake mission")
-                    while True:
-                        self._mouse_click(npc_fire_lake_pos[0]+50, npc_fire_lake_pos[1]+50, button="right", clicks=2)
-                        msg_fire_lake_npc_create_pos = imagesearch("photo/msg_fire_lake_npc_create.bmp", precision=0.92)
-                        if msg_fire_lake_npc_create_pos[0] != -1:
-                            break
-                    self._send_key("{SPACE}")
-
-                else:
-                    logging.info("no fire lake npc and try to move")
-                    npc_ghost_captain_pos = imagesearch("photo/npc_ghost_captain.bmp", precision=0.92)
-                    if npc_ghost_captain_pos[0] != -1:
-                        self._mouse_click(npc_ghost_captain_pos[0]-20, npc_ghost_captain_pos[1], button="left", clicks=1)
-                        self._send_key("{SPACE}")
-
-                time.sleep(1)
-                player_in_fire_lake_map_pos = imagesearch("photo/player_in_fire_lake_map.bmp", precision=0.92)
-                if player_in_fire_lake_map_pos[0] != -1:
-                    break
 
         def execute_skill(skill_pos, times=1):
             # buff
@@ -336,7 +322,7 @@ class ROTask():
         if player_C0per_in_unknow_map_pos[0] != -1:
             # not in the fire lake map
             # enter the mission
-            enter_fire_lake_mission()
+            self._enter_fire_lake_mission("photo/player_C0per_in_fire_lake_map.bmp")
 
         elif player_C0per_in_fire_lake_map_pos[0] != -1:
             # in the fire lake map

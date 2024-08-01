@@ -37,12 +37,12 @@ def main(task, send_key_delay_time):
         while True:
             ro_task.enter_fire_lake_mission()
             time.sleep(1)  # Add delay to prevent too frequent task calls
-    elif task == 'make_fire_lake_mission':
+    elif task == 'make_fire_lake':
         while True:
-            ro_task.make_fire_lake_mission()
+            ro_task.make_fire_lake()
             time.sleep(1)  # Add delay to prevent too frequent task calls
     else:
-        logging.error("Unknown task. Available tasks are: make_money, enter_fire_lake, make_fire_lake_mission")
+        logging.error("Unknown task. Available tasks are: make_money, enter_fire_lake, make_fire_lake")
 
 
 if __name__ == "__main__":
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute different tasks for the Ragnarok game.")
     parser.add_argument(
         '-t', '--task',
-        choices=['make_money', 'enter_fire_lake', 'make_fire_lake_mission'],
+        choices=['make_money', 'enter_fire_lake', 'make_fire_lake'],
         required=True,
         help="The task to execute"
     )

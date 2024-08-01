@@ -296,7 +296,7 @@ class ROTask():
                     self._send_key("w")
                     self._mouse_click(skill_pos[0], skill_pos[1], button="left")
                     time.sleep(0.3)
-                player_msg_execute_skill_pos = imagesearch("photo/player_msg_execute_skill.bmp", precision=0.92)
+                player_msg_execute_skill_pos = imagesearch("photo/player_msg_execute_skill.bmp", precision=0.9)
                 if player_msg_execute_skill_pos[0] != -1:
                     break
 

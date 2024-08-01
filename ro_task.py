@@ -152,7 +152,12 @@ class ROTask():
 
     def _enable_auto_attack(self):
         logging.info("enable auto attack")
-        self._send_key("z")
+        self._send_key("=")
+        while True:
+            player_in_unknow_map_pos = imagesearch("photo/player_in_unknow_map.bmp", precision=0.92)
+            if player_in_unknow_map_pos[0] != -1:
+                break
+            time.sleep(0.5)
         self._send_key("{SPACE}", clicks=2)
 
     def make_money(self):
@@ -172,38 +177,50 @@ class ROTask():
 
         def buy_cheque(shop_pos):
             # npc_shop_pos[0]+50, npc_shop_pos[1]+50
-            logging.info("start to buy red packet")
+            logging.info("start to buy heque")
             self._mouse_click(shop_pos[0], shop_pos[1], button="right", clicks=2)
             self._send_key("{SPACE}")
             time.sleep(1)
-            shop_item_100_million_pos = imagesearch("photo/shop_item_100_million.bmp", precision=0.92)
-            logging.debug(f"shop_item_100_million_pos: {shop_item_100_million_pos}")
-            if shop_item_100_million_pos[0] != -1:
+            shop_item_heque_pos = imagesearch("photo/shop_item_heque.bmp", precision=0.92)
+            shop_item_heque_blue_pos = imagesearch("photo/shop_item_heque_blue.bmp", precision=0.92)
+            logging.debug(f"shop_item_heque_pos: {shop_item_heque_pos}")
+            logging.debug(f"shop_item_heque_blue_pos: {shop_item_heque_blue_pos}")
+
+            final_heque_pos = shop_item_heque_pos if shop_item_heque_pos[0] != -1 else shop_item_heque_blue_pos
+
+            if final_heque_pos[0] != -1:
                 logging.info("drag red packet into shopping cart")
                 shop_shopping_cart_pos = imagesearch("photo/shop_shopping_cart.bmp", precision=0.92)
                 logging.debug(f"shop_shopping_cart_pos: {shop_shopping_cart_pos}")
+
                 for i in range(1):
-                    self._mouse_left_drag(shop_item_100_million_pos[0]+10, shop_item_100_million_pos[1]+5,
+                    self._mouse_left_drag(final_heque_pos[0]+10, final_heque_pos[1]+5,
                                           shop_shopping_cart_pos[0]+40, shop_shopping_cart_pos[1]+40)
                     self._send_key("{ENTER}")
-                logging.info("confirm buy red packet")
 
-                shop_buy_or_cancel_button_pos = imagesearch("photo/shop_buy_or_cancel_button.bmp", precision=0.92)
-                logging.debug(f"shop_buy_or_cancel_button_pos: {shop_buy_or_cancel_button_pos}")
-                self._mouse_click(shop_buy_or_cancel_button_pos[0]+10, shop_buy_or_cancel_button_pos[1]+10, button="left")
+                logging.info("confirm buy red packet")
+                while True:
+                    shop_buy_or_cancel_button_pos = imagesearch("photo/shop_buy_or_cancel_button.bmp", precision=0.92)
+                    logging.debug(f"shop_buy_or_cancel_button_pos: {shop_buy_or_cancel_button_pos}")
+                    if shop_buy_or_cancel_button_pos[0] == -1:
+                        break
+                    self._mouse_click(shop_buy_or_cancel_button_pos[0]+10, shop_buy_or_cancel_button_pos[1]+10, button="left")
+                    time.sleep(0.3)
 
         def tp_to_money_map():
-            npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
-            if npc_tp_pos[0] != -1:
-                npc_tp_pos = (npc_tp_pos[0]+70, npc_tp_pos[1]+50)
-                self._mouse_click(npc_tp_pos[0], npc_tp_pos[1], button="right", clicks=2)
-                self._send_key("{SPACE}", clicks=3)
-                time.sleep(2)
-                return True
-            else:
-                logging.error("no tp npc and run @load")
-                self._send_key("`")
-                return False
+            while True:
+                player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+                if player_in_home_map_pos[0] == -1:
+                    break
+                npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
+                if npc_tp_pos[0] != -1:
+                    npc_tp_pos = (npc_tp_pos[0]+70, npc_tp_pos[1]+50)
+                    self._mouse_click(npc_tp_pos[0], npc_tp_pos[1], button="right", clicks=2)
+                    self._send_key("{SPACE}", clicks=3)
+                    time.sleep(2)
+                else:
+                    logging.error("no tp npc and run @load")
+                    self._send_key("-")
 
         # find the shop bar position
         npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)

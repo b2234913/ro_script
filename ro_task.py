@@ -63,7 +63,7 @@ class ROTask():
     def _check_verify_code_with_api(self):
 
         verify_code_pos = imagesearch("photo/msg_verify_code.bmp", precision=0.9)
-        logging.debug(f"Image search result: {verify_code_pos}")
+        logging.debug(f"verify_code_pos: {verify_code_pos}")
 
         if verify_code_pos[0] != -1:
             logging.info("Verify code needed")
@@ -318,23 +318,27 @@ class ROTask():
             logging.info("talk to monster")
             while True:
                 self._mouse_click(monster_pos[0], monster_pos[1], button="right", clicks=2)
-                time.sleep(0.3)
+                time.sleep(0.5)
                 msg_fire_lake_monster_talking_pos = imagesearch("photo/msg_fire_lake_monster_talking.bmp", precision=0.92)
+                logging.debug(f"msg_fire_lake_monster_talking_pos: {msg_fire_lake_monster_talking_pos}")
                 if msg_fire_lake_monster_talking_pos[0] != -1:
                     break
             self._send_key("{SPACE}", clicks=2)
             time.sleep(0.3)
             self._check_verify_code_with_api()
+            time.sleep(1)
 
         # check if player is in mission map
-        player_in_unknow_map_pos = imagesearch("photo/player_in_unknow_map.bmp", precision=0.92)
-        player_in_fire_lake_map_pos = imagesearch("photo/player_in_fire_lake_map.bmp", precision=0.92)
-        if player_in_unknow_map_pos[0] != -1:
+        player_C0per_in_unknow_map_pos = imagesearch("photo/player_C0per_in_unknow_map.bmp", precision=0.9)
+        player_C0per_in_fire_lake_map_pos = imagesearch("photo/player_C0per_in_fire_lake_map.bmp", precision=0.9)
+        logging.debug(f"player_C0per_in_unknow_map_pos: {player_C0per_in_unknow_map_pos}")
+        logging.debug(f"player_C0per_in_fire_lake_map_pos: {player_C0per_in_fire_lake_map_pos}")
+        if player_C0per_in_unknow_map_pos[0] != -1:
             # not in the fire lake map
             # enter the mission
             enter_fire_lake_mission()
 
-        elif player_in_fire_lake_map_pos[0] != -1:
+        elif player_C0per_in_fire_lake_map_pos[0] != -1:
             # in the fire lake map
             # execute skill to kill the monster
             map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)

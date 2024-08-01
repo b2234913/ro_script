@@ -5,6 +5,27 @@ mode con: cols=50 lines=40
 :: Change to the directory where the script is located
 cd /d %~dp0
 
+
+@echo off
+set "source_dir=%~dp0lib"
+set "source_file=libomp140.x86_64.dll"
+set "destination_dir=C:\Windows\System32"
+set "destination_file=%destination_dir%\%source_file%"
+
+:: Check if the source file exists in the destination directory
+if exist "%destination_file%" (
+    echo %source_file% already exists in %destination_dir%.
+) else (
+    echo %source_file% not found in %destination_dir%. Copying...
+    copy "%source_dir%\%source_file%" "%destination_dir%"
+    if errorlevel 1 (
+        echo Failed to copy %source_file%.
+    ) else (
+        echo %source_file% copied successfully.
+    )
+)
+
+
 :: Clean the directory before running the script
 cmd /c clean.bat
 
@@ -39,7 +60,7 @@ if "%task_choice%"=="1" (
 )
 
 :: Ask for delay time
-set /p delay="Enter the delay time in milliseconds (default is 350ms): "
+@REM set /p delay="Enter the delay time in milliseconds (default is 350ms): "
 
 :: Use default delay if input is empty
 if "%delay%"=="" (
@@ -48,7 +69,7 @@ if "%delay%"=="" (
 
 :: Run the Python script with the selected parameters
 echo Running task %task% with a delay of %delay% milliseconds...
-main.exe --task %task% --delay %delay%
+main.exe --task %task% --delay %delay% -l DEBUG
 
 :: Pause to keep the window open
 pause

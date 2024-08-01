@@ -22,4 +22,3 @@ REM Change back to the initial directory
 cd /d "%INITIAL_DIR%"
 
 echo Done.
-pause

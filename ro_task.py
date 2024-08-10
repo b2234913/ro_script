@@ -29,6 +29,7 @@ class ROTask():
         self.send_key_delay_time = send_key_delay_time  # ms
         autoit.win_activate(self.window_title)
         self.window_pos = autoit.win_get_pos(self.window_title)
+        self.loop_timeout_sec = 10
 
     def _reset_mouse_pos(self):
         autoit.mouse_move(self.window_pos[0]+50, self.window_pos[1]+50, speed=1)
@@ -93,19 +94,39 @@ class ROTask():
             response = requests.post(url, files=files)
             logging.debug(f"API response: {response.text}")
 
+            verify_code_text = None
             if response.status_code == 200:
                 response_data = response.json()
                 if 'numbers_only' in response_data:
                     verify_code_text = response_data['numbers_only']
                     logging.debug(f"Recognized verify code: {verify_code_text}")
-                    self._send_key("{BACKSPACE}", clicks=5)
-                    self._send_key(verify_code_text)
-                    self._send_key("{ENTER}")
-                    self._send_key("{SPACE}")
                 else:
                     logging.warning("No text recognized in the response")
+                    return False
             else:
                 logging.error(f"Failed to call OCR API: {response.status_code}")
+                return False
+
+            if verify_code_text:
+                self._send_key("{BACKSPACE}", clicks=5)
+                self._send_key(verify_code_text)
+                self._send_key("{ENTER}")
+            else:
+                logging.warning("No text recognized")
+                return False
+
+            msg_complete_verify_code_pos = imagesearch("photo/msg_complete_verify_code.bmp", precision=0.9)
+            if msg_complete_verify_code_pos[0] != -1:
+                self._send_key("{SPACE}")
+                logging.info("Verify code completed")
+                return True
+            else:
+                logging.warning("Verify code not completed")
+                self._send_key("{SPACE}")
+                return False
+        else:
+            logging.debug("No verify code needed")
+            return True
 
     def _check_verify_code(self):
         logging.debug("Starting verification code check.")
@@ -153,16 +174,26 @@ class ROTask():
     def _enable_auto_attack(self):
         logging.info("enable auto attack")
         self._send_key("=")
+        start_time = time.time()
         while True:
-            player_in_unknow_map_pos = imagesearch("photo/player_in_unknow_map.bmp", precision=0.92)
-            if player_in_unknow_map_pos[0] != -1:
+            if time.time() - start_time > self.loop_timeout_sec:
+                logging.debug("Timeout reached, exiting loop.")
+                break
+            player_in_unknow_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+            if player_in_unknow_map_pos[0] == -1:
                 break
             time.sleep(0.5)
+
         self._send_key("{SPACE}", clicks=2)
 
     def _enter_fire_lake_mission(self, check_image_path):
         logging.info("enter fire lake mission")
+        start_time = time.time()
         while True:
+            if time.time() - start_time > self.loop_timeout_sec:
+                logging.debug("Timeout reached, exiting loop.")
+                break
+
             npc_fire_lake_pos = imagesearch("photo/npc_fire_lake.bmp", precision=0.92)
             if npc_fire_lake_pos[0] != -1:
                 logging.info("enter fire lake mission")
@@ -196,7 +227,7 @@ class ROTask():
         def quick_sell_item(shop_pos):
             logging.info("quick sell item")
             self._mouse_click(shop_pos[0], shop_pos[1], button="right", clicks=2)
-            self._send_key("{DOWN}", clicks=7)
+            self._send_key("{DOWN}", clicks=8)
             self._send_key("{SPACE}")
             self._send_key("{DOWN}")
             self._send_key("{SPACE}", clicks=2)
@@ -205,6 +236,7 @@ class ROTask():
             # npc_shop_pos[0]+50, npc_shop_pos[1]+50
             logging.info("start to buy heque")
             self._mouse_click(shop_pos[0], shop_pos[1], button="right", clicks=2)
+            self._send_key("{DOWN}")
             self._send_key("{SPACE}")
             time.sleep(1)
             shop_item_heque_pos = imagesearch("photo/shop_item_heque.bmp", precision=0.92)
@@ -225,7 +257,12 @@ class ROTask():
                     self._send_key("{ENTER}")
 
                 logging.info("confirm buy red packet")
+                start_time = time.time()
                 while True:
+                    if time.time() - start_time > self.loop_timeout_sec:
+                        logging.debug("Timeout reached, exiting loop.")
+                        break
+
                     shop_buy_or_cancel_button_pos = imagesearch("photo/shop_buy_or_cancel_button.bmp", precision=0.92)
                     logging.debug(f"shop_buy_or_cancel_button_pos: {shop_buy_or_cancel_button_pos}")
                     if shop_buy_or_cancel_button_pos[0] == -1:
@@ -234,7 +271,11 @@ class ROTask():
                     time.sleep(0.3)
 
         def tp_to_money_map():
+            start_time = time.time()
             while True:
+                if time.time() - start_time > self.loop_timeout_sec:
+                    logging.debug("Timeout reached, exiting loop.")
+                    break
                 player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
                 if player_in_home_map_pos[0] == -1:
                     break
@@ -248,7 +289,6 @@ class ROTask():
                     logging.error("no tp npc and run @load")
                     self._send_key("-")
 
-        # find the shop bar position
         npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
         if npc_shop_pos[0] != -1:
             npc_shop_pos = (npc_shop_pos[0]+50, npc_shop_pos[1]+50)
@@ -260,11 +300,18 @@ class ROTask():
 
             tp_to_money_map()
 
-            player_in_unknow_map_pos = imagesearch("photo/player_in_unknow_map.bmp", precision=0.92)
-            if player_in_unknow_map_pos[0] != -1:
-                self._enable_auto_attack()
-                # check if there is a verify code
-                self._check_verify_code_with_api()
+            player_in_unknow_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+            if player_in_unknow_map_pos[0] == -1:
+
+                start_time = time.time()
+                while True:
+                    self._enable_auto_attack()
+
+                    if time.time() - start_time > self.loop_timeout_sec:
+                        logging.debug("Timeout reached, exiting loop.")
+                        break
+                    if self._check_verify_code_with_api():
+                        break
         else:
             logging.debug("no shop bar")
 
@@ -297,24 +344,36 @@ class ROTask():
                     self._send_key("w")
                     self._mouse_click(skill_pos[0], skill_pos[1], button="left")
                     time.sleep(0.3)
-                for i in range(2):
+                for i in range(3):
                     if imagesearch(f"photo/player_msg_execute_skill_{i}.bmp", precision=0.9)[0] != -1:
                         skill_result = True
                         break
 
         def talk_to_monster(monster_pos):
             logging.info("talk to monster")
+            start_time = time.time()
             while True:
+                if time.time() - start_time > self.loop_timeout_sec:
+                    logging.debug("Timeout reached, exiting loop.")
+                    break
+
                 self._mouse_click(monster_pos[0], monster_pos[1], button="right", clicks=2)
                 time.sleep(0.5)
                 msg_fire_lake_monster_talking_pos = imagesearch("photo/msg_fire_lake_monster_talking.bmp", precision=0.92)
                 logging.debug(f"msg_fire_lake_monster_talking_pos: {msg_fire_lake_monster_talking_pos}")
                 if msg_fire_lake_monster_talking_pos[0] != -1:
                     break
+
             self._send_key("{SPACE}", clicks=2)
             time.sleep(0.3)
-            self._check_verify_code_with_api()
-            time.sleep(1)
+
+            start_time = time.time()
+            while True:
+                if time.time() - start_time > self.loop_timeout_sec:
+                    logging.debug("Timeout reached, exiting loop.")
+                    break
+                if self._check_verify_code_with_api():
+                    break
 
         # check if player is in mission map
         player_C0per_in_unknow_map_pos = imagesearch("photo/player_C0per_in_unknow_map.bmp", precision=0.9)
@@ -332,8 +391,8 @@ class ROTask():
             map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)
             if map_fire_lake_tower_pos[0] != -1:
                 logging.info("execute skill to kill the monster")
-                execute_skill((map_fire_lake_tower_pos[0]-180, map_fire_lake_tower_pos[1]+90), times=1)
                 talk_to_monster((map_fire_lake_tower_pos[0]-200, map_fire_lake_tower_pos[1]+10))
+                execute_skill((map_fire_lake_tower_pos[0]-180, map_fire_lake_tower_pos[1]+90), times=1)
             else:
                 logging.debug("not in fire lake tower map")
         time.sleep(2)

@@ -396,3 +396,10 @@ class ROTask():
             else:
                 logging.debug("not in fire lake tower map")
         time.sleep(2)
+
+    def enter_mission(self, map_name):
+        target_pos = imagesearch(f"photo/npc_{map_name}.bmp", precision=0.92)
+        player_tiler_in_unknow_map_pos = imagesearch("photo/player_tiler_in_unknow_map.bmp", precision=0.92)
+        if target_pos[0] != -1 and player_tiler_in_unknow_map_pos[0] != -1:
+            self._mouse_click(target_pos[0]+50, target_pos[1]+45, button="right", clicks=2)
+            self._send_key("{SPACE}", clicks=2)

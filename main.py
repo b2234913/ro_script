@@ -41,6 +41,14 @@ def main(task, send_key_delay_time):
         while True:
             ro_task.make_fire_lake()
             time.sleep(1)  # Add delay to prevent too frequent task calls
+    elif task == 'enter_king_gym':
+        while True:
+            ro_task.enter_mission("king_gym")
+            time.sleep(1)
+    elif task == 'enter_bad_gym':
+        while True:
+            ro_task.enter_mission("bad_gym")
+            time.sleep(1)
     else:
         logging.error("Unknown task. Available tasks are: make_money, enter_fire_lake, make_fire_lake")
 
@@ -52,7 +60,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute different tasks for the Ragnarok game.")
     parser.add_argument(
         '-t', '--task',
-        choices=['make_money', 'enter_fire_lake', 'make_fire_lake'],
+        choices=['make_money', 'make_fire_lake', 'enter_fire_lake', 'enter_king_gym', 'enter_bad_gym'],
         required=True,
         help="The task to execute"
     )

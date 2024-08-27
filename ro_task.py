@@ -29,7 +29,7 @@ class ROTask():
         self.send_key_delay_time = send_key_delay_time  # ms
         autoit.win_activate(self.window_title)
         self.window_pos = autoit.win_get_pos(self.window_title)
-        self.loop_timeout_sec = 10
+        self.loop_timeout_sec = 30
 
     def _reset_mouse_pos(self):
         autoit.mouse_move(self.window_pos[0]+50, self.window_pos[1]+50, speed=1)
@@ -217,6 +217,25 @@ class ROTask():
             if player_in_fire_lake_map_pos[0] != -1:
                 break
 
+    def _tp_to_map(self):
+        start_time = time.time()
+        while True:
+            if time.time() - start_time > self.loop_timeout_sec:
+                logging.debug("Timeout reached, exiting loop.")
+                break
+            player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+            if player_in_home_map_pos[0] == -1:
+                break
+            npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
+            if npc_tp_pos[0] != -1:
+                npc_tp_pos = (npc_tp_pos[0]+70, npc_tp_pos[1]+50)
+                self._mouse_click(npc_tp_pos[0], npc_tp_pos[1], button="right", clicks=2)
+                self._send_key("{SPACE}", clicks=3)
+                time.sleep(2)
+            else:
+                logging.error("no tp npc and run @load")
+                self._send_key("-")
+
     def make_money(self):
         """ this script is used to make money in the game
         1. check if player is in the money map
@@ -270,25 +289,6 @@ class ROTask():
                     self._mouse_click(shop_buy_or_cancel_button_pos[0]+10, shop_buy_or_cancel_button_pos[1]+10, button="left")
                     time.sleep(0.3)
 
-        def tp_to_money_map():
-            start_time = time.time()
-            while True:
-                if time.time() - start_time > self.loop_timeout_sec:
-                    logging.debug("Timeout reached, exiting loop.")
-                    break
-                player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
-                if player_in_home_map_pos[0] == -1:
-                    break
-                npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
-                if npc_tp_pos[0] != -1:
-                    npc_tp_pos = (npc_tp_pos[0]+70, npc_tp_pos[1]+50)
-                    self._mouse_click(npc_tp_pos[0], npc_tp_pos[1], button="right", clicks=2)
-                    self._send_key("{SPACE}", clicks=3)
-                    time.sleep(2)
-                else:
-                    logging.error("no tp npc and run @load")
-                    self._send_key("-")
-
         npc_shop_pos = imagesearch("photo/npc_shop.bmp", precision=0.92)
         if npc_shop_pos[0] != -1:
             npc_shop_pos = (npc_shop_pos[0]+50, npc_shop_pos[1]+50)
@@ -297,8 +297,7 @@ class ROTask():
             buy_cheque(npc_shop_pos)
 
             logging.info("tp to money map")
-
-            tp_to_money_map()
+            self._tp_to_map()
 
             player_in_unknow_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
             if player_in_unknow_map_pos[0] == -1:
@@ -395,6 +394,45 @@ class ROTask():
                 execute_skill((map_fire_lake_tower_pos[0]-180, map_fire_lake_tower_pos[1]+90), times=1)
             else:
                 logging.debug("not in fire lake tower map")
+        time.sleep(2)
+
+    def make_soul(self):
+        def _sell_soul():
+            for i in range(1, 3):
+                npc_pos = imagesearch(f"photo/npc_arms_soul_{i}.bmp", precision=0.92)
+                if npc_pos[0] != -1:
+                    npc_pos = (npc_pos[0]+50, npc_pos[1]+50)
+                    self._mouse_click(npc_pos[0], npc_pos[1], button="right", clicks=2)
+                    self._send_key("{SPACE}", clicks=6)
+
+        player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+        player_in_soul_map_pos = imagesearch("photo/player_in_soul_map.bmp", precision=0.92)
+        if player_in_home_map_pos[0] != -1:
+            _sell_soul()
+
+            logging.info("tp to soul map")
+            self._tp_to_map()
+
+            player_in_soul_map_pos = imagesearch("photo/player_in_soul_map.bmp", precision=0.92)
+            if player_in_soul_map_pos[0] != -1:
+                start_time = time.time()
+                while True:
+                    self._enable_auto_attack()
+
+                    if time.time() - start_time > self.loop_timeout_sec:
+                        logging.debug("Timeout reached, exiting loop.")
+                        break
+                    if self._check_verify_code_with_api():
+                        break
+        elif player_in_soul_map_pos[0] != -1:
+            logging.debug("in soul map")
+            player_with_full_bag_pos = imagesearch("photo/player_with_full_bag.bmp", precision=0.92)
+            if player_with_full_bag_pos[0] != -1:
+                self._send_key("=")
+                self._send_key("{SPACE}", clicks=4)
+                self._send_key("-")
+            else:
+                logging.debug("no full bag")
         time.sleep(2)
 
     def enter_mission(self, map_name):

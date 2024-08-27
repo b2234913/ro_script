@@ -7,9 +7,9 @@ BINARY = ".\mouse\Lib\site-packages\autoit\lib\AutoItX3_x64.dll;autoit\lib"
 ZIP_FILE = ro_script.zip
 
 # PyInstaller command
-.PHONY: all clean package
+.PHONY: all clean main package upload
 
-all: main package
+all: clean main package upload
 
 main:
 	$(PYINSTALLER) --onefile --add-binary $(BINARY) $(MAIN_SCRIPT)
@@ -21,3 +21,7 @@ package:
 # Clean up build files
 clean:
 	rm -rf build dist *.spec __pycache__ $(ZIP_FILE)
+
+upload:
+	cp dist/main.exe .
+	cmd "/C upload.bat"

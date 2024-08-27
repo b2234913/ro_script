@@ -41,9 +41,11 @@ IF %ERRORLEVEL% NEQ 0 (
 echo Select the task to execute:
 echo 1. make_money
 echo 2. make_fire_lake
-echo 3. enter_fire_lake
-echo 4. enter_king_gym
-echo 5. enter_bad_gym
+echo 3. make_soul
+echo 4. enter_fire_lake
+echo 5. enter_king_gym
+echo 6. enter_bad_gym
+echo 7. enter_bad_dark
 
 :: Get task input
 set /p task_choice="Enter the number of the task: "
@@ -54,11 +56,15 @@ if "%task_choice%"=="1" (
 ) else if "%task_choice%"=="2" (
     set task=make_fire_lake
 ) else if "%task_choice%"=="3" (
-    set task=enter_fire_lake
+    set task=make_soul
 ) else if "%task_choice%"=="4" (
-    set task=enter_king_gym
+    set task=enter_fire_lake
 ) else if "%task_choice%"=="5" (
+    set task=enter_king_gym
+) else if "%task_choice%"=="6" (
     set task=enter_bad_gym
+) else if "%task_choice%"=="7" (
+    set task=enter_bad_dark
 ) else (
     echo Invalid choice.
     pause

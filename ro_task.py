@@ -86,19 +86,19 @@ class ROTask():
             img_byte_arr = img_byte_arr.getvalue()
 
             # Send the image to the OCR API
-            url = "http://100.105.149.4:5000/ocr"
+            url = "https://ocr-api.vw.com/ocr"
             files = {
-                'file': ('verify_code.png', img_byte_arr, 'image/png')
+                'image': ('verify_code.png', img_byte_arr, 'image/png')
             }
 
-            response = requests.post(url, files=files)
+            response = requests.post(url, files=files, verify=False)
             logging.debug(f"API response: {response.text}")
 
             verify_code_text = None
             if response.status_code == 200:
                 response_data = response.json()
-                if 'numbers_only' in response_data:
-                    verify_code_text = response_data['numbers_only']
+                if 'recognized_text' in response_data:
+                    verify_code_text = response_data['recognized_text']
                     logging.debug(f"Recognized verify code: {verify_code_text}")
                 else:
                     logging.warning("No text recognized in the response")

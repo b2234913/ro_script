@@ -136,7 +136,7 @@ class ROTask():
             if time.time() - start_time > self.loop_timeout_sec:
                 logging.debug("Timeout reached, exiting loop.")
                 break
-            player_in_unknow_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+            player_in_unknow_map_pos = self._check_player_in_map("home_map")
             if player_in_unknow_map_pos[0] == -1:
                 break
             time.sleep(0.5)
@@ -150,7 +150,7 @@ class ROTask():
             self._mouse_click(npc_ghost_captain_pos[0]-20, npc_ghost_captain_pos[1], button="left", clicks=1)
             self._send_key("{SPACE}")
 
-    def _enter_fire_lake_mission(self, check_image_path):
+    def _enter_fire_lake_mission(self):
         logging.info("enter fire lake mission")
         start_time = time.time()
         while True:
@@ -173,7 +173,7 @@ class ROTask():
                 self._try_to_move_pos()
 
             time.sleep(1)
-            player_in_fire_lake_map_pos = imagesearch(check_image_path, precision=0.92)
+            player_in_fire_lake_map_pos = self._check_player_in_map("fire_lake_map")
             if player_in_fire_lake_map_pos[0] != -1:
                 break
 
@@ -183,7 +183,7 @@ class ROTask():
             if time.time() - start_time > self.loop_timeout_sec:
                 logging.debug("Timeout reached, exiting loop.")
                 break
-            player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+            player_in_home_map_pos = self._check_player_in_map("home_map")
             if player_in_home_map_pos[0] == -1:
                 break
             npc_tp_pos = imagesearch("photo/npc_tp.bmp", precision=0.92)
@@ -196,11 +196,13 @@ class ROTask():
                 logging.error("no tp npc and run @load")
                 self._send_key("-")
 
-    def _get_player_map_info_area(self):
+    def _check_player_in_map(self, map_name):
         player_me_icon_pos = imagesearch("photo/player_me_icon.bmp", precision=0.92)
         logging.debug(f"player_me_icon_pos: {player_me_icon_pos}")
         bbox = (player_me_icon_pos[0]-212, player_me_icon_pos[1]-22, player_me_icon_pos[0]+45, player_me_icon_pos[1]+15)
-        return bbox
+        map_pos = imagesearcharea(f"photo/player_in_{map_name}.bmp", bbox[0], bbox[1], bbox[2], bbox[3], precision=0.92)
+        logging.debug(f"map_pos: {map_pos}")
+        return map_pos
 
     def make_money(self):
         """ this script is used to make money in the game
@@ -265,7 +267,7 @@ class ROTask():
             logging.info("tp to money map")
             self._tp_to_map()
 
-            player_in_unknow_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
+            player_in_unknow_map_pos = self._check_player_in_map("home_map")
             if player_in_unknow_map_pos[0] == -1:
 
                 start_time = time.time()
@@ -288,9 +290,10 @@ class ROTask():
         2. enter the mission
         """
         msg_fire_lake_pos = imagesearch("photo/msg_fire_lake.bmp", precision=0.92)
-        player_tiler_in_unknow_map_pos = imagesearch("photo/player_tiler_in_unknow_map.bmp", precision=0.92)
+        player_tiler_in_unknow_map_pos = self._check_player_in_map("unknow_map")
+        logging.debug(f"msg_fire_lake_pos: {msg_fire_lake_pos}")
         if msg_fire_lake_pos[0] != -1 and player_tiler_in_unknow_map_pos[0] != -1:
-            self._enter_fire_lake_mission("photo/player_tiler_in_fire_lake_map.bmp")
+            self._enter_fire_lake_mission()
 
     def make_fire_lake(self):
         """ this script is used to make the fire lake mission
@@ -309,7 +312,7 @@ class ROTask():
                     self._send_key("w")
                     self._mouse_click(skill_pos[0], skill_pos[1], button="left")
                     time.sleep(0.3)
-                for i in range(3):
+                for i in range(4):
                     if imagesearch(f"photo/player_msg_execute_skill_{i}.bmp", precision=0.9)[0] != -1:
                         skill_result = True
                         break
@@ -341,16 +344,16 @@ class ROTask():
                     break
 
         # check if player is in mission map
-        player_C0per_in_unknow_map_pos = imagesearch("photo/player_C0per_in_unknow_map.bmp", precision=0.9)
-        player_C0per_in_fire_lake_map_pos = imagesearch("photo/player_C0per_in_fire_lake_map.bmp", precision=0.9)
-        logging.debug(f"player_C0per_in_unknow_map_pos: {player_C0per_in_unknow_map_pos}")
-        logging.debug(f"player_C0per_in_fire_lake_map_pos: {player_C0per_in_fire_lake_map_pos}")
-        if player_C0per_in_unknow_map_pos[0] != -1:
+        player_in_unknow_map_pos = self._check_player_in_map("unknow_map")
+        player_in_fire_lake_map_pos = self._check_player_in_map("fire_lake_map")
+        logging.debug(f"player_in_unknow_map_pos: {player_in_unknow_map_pos}")
+        logging.debug(f"player_in_fire_lake_map_pos: {player_in_fire_lake_map_pos}")
+        if player_in_unknow_map_pos[0] != -1:
             # not in the fire lake map
             # enter the mission
-            self._enter_fire_lake_mission("photo/player_C0per_in_fire_lake_map.bmp")
+            self._enter_fire_lake_mission()
 
-        elif player_C0per_in_fire_lake_map_pos[0] != -1:
+        elif player_in_fire_lake_map_pos[0] != -1:
             # in the fire lake map
             # execute skill to kill the monster
             map_fire_lake_tower_pos = imagesearch("photo/map_fire_lake_tower_2.bmp", precision=0.7)
@@ -363,14 +366,14 @@ class ROTask():
         time.sleep(2)
 
     def make_life_palce(self):
-        player_C0per_in_life_palace_pos = imagesearch("photo/npc_life_palace.bmp", precision=0.92)
-        logging.debug(f"player_C0per_in_life_palace_pos: {player_C0per_in_life_palace_pos}")
-        if player_C0per_in_life_palace_pos[0] != -1:
+        player_in_life_palace_pos = imagesearch("photo/npc_life_palace.bmp", precision=0.92)
+        logging.debug(f"player_in_life_palace_pos: {player_in_life_palace_pos}")
+        if player_in_life_palace_pos[0] != -1:
             self.enter_mission("life_palace")
             time.sleep(1)
 
 
-        player_in_life_palce_map_pos = imagesearch("photo/player_in_life_palce_map.bmp", precision=0.92)
+        player_in_life_palce_map_pos = self._check_player_in_map("life_palce_map")
         if player_in_life_palce_map_pos[0] != -1:
             player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
             if player_hp_pos[0] != -1:
@@ -389,7 +392,7 @@ class ROTask():
 
                 self._send_key("w")
 
-        if player_C0per_in_life_palace_pos[0] == -1 and player_in_life_palce_map_pos[0] == -1:
+        if player_in_life_palace_pos[0] == -1 and player_in_life_palce_map_pos[0] == -1:
             self._try_to_move_pos()
         time.sleep(2)
 
@@ -402,15 +405,15 @@ class ROTask():
                     self._mouse_click(npc_pos[0], npc_pos[1], button="right", clicks=2)
                     self._send_key("{SPACE}", clicks=6)
 
-        player_in_home_map_pos = imagesearch("photo/player_in_home_map.bmp", precision=0.92)
-        player_in_soul_map_pos = imagesearch("photo/player_in_soul_map.bmp", precision=0.92)
+        player_in_home_map_pos = self._check_player_in_map("home_map")
+        player_in_soul_map_pos = self._check_player_in_map("soul_map")
         if player_in_home_map_pos[0] != -1:
             _sell_soul()
 
             logging.info("tp to soul map")
             self._tp_to_map()
 
-            player_in_soul_map_pos = imagesearch("photo/player_in_soul_map.bmp", precision=0.92)
+            player_in_soul_map_pos = self._check_player_in_map("soul_map")
             if player_in_soul_map_pos[0] != -1:
                 start_time = time.time()
                 while True:
@@ -436,10 +439,7 @@ class ROTask():
         target_pos = imagesearch(f"photo/npc_{map_name}.bmp", precision=0.9)
         logging.debug(f"target_pos: {target_pos}")
 
-
-        bbox = self._get_player_map_info_area()
-        player_in_unknow_map_pos = imagesearcharea("photo/player_in_unknow_map.bmp", bbox[0], bbox[1], bbox[2], bbox[3], precision=0.92)
-        logging.debug(f"player_in_unknow_map_pos: {player_in_unknow_map_pos}")
+        player_in_unknow_map_pos = self._check_player_in_map("unknow_map")
 
         if target_pos[0] != -1 and player_in_unknow_map_pos[0] != -1:
             self._mouse_click(target_pos[0]+50, target_pos[1]+45, button="right", clicks=2)

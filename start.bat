@@ -41,11 +41,12 @@ IF %ERRORLEVEL% NEQ 0 (
 echo Select the task to execute:
 echo 1. make_money
 echo 2. make_fire_lake
-echo 3. make_soul
-echo 4. enter_fire_lake
-echo 5. enter_king_gym
-echo 6. enter_bad_gym
-echo 7. enter_bad_dark
+echo 3. make_life_palce
+echo 4. make_soul
+echo 5. enter_fire_lake
+echo 6. enter_king_gym
+echo 7. enter_bad_gym
+echo 8. enter_bad_dark
 
 :: Get task input
 set /p task_choice="Enter the number of the task: "

@@ -37,6 +37,10 @@ def main(task, send_key_delay_time):
         while True:
             ro_task.make_fire_lake()
             time.sleep(1)  # Add delay to prevent too frequent task calls
+    elif task == 'make_life_palce':
+        while True:
+            ro_task.make_life_palce()
+            time.sleep(1)
     elif task == 'make_soul':
         while True:
             ro_task.make_soul()
@@ -68,7 +72,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute different tasks for the Ragnarok game.")
     parser.add_argument(
         '-t', '--task',
-        choices=['make_money', 'make_fire_lake', 'make_soul', 'enter_fire_lake',
+        choices=['make_money', 'make_fire_lake', 'make_life_palce', 'make_soul', 'enter_fire_lake',
                  'enter_king_gym', 'enter_bad_gym', 'enter_bad_dark'],
         required=True,
         help="The task to execute"

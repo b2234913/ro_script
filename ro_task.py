@@ -7,7 +7,7 @@ import numpy as np
 import torch
 
 from io import BytesIO
-from python_imagesearch.imagesearch import imagesearch
+from python_imagesearch.imagesearch import imagesearch, imagesearcharea
 from PIL import ImageGrab
 
 # Modifying the easyocr.Reader to use weights_only=True in torch.load
@@ -128,49 +128,6 @@ class ROTask():
             logging.debug("No verify code needed")
             return True
 
-    def _check_verify_code(self):
-        logging.debug("Starting verification code check.")
-
-        verify_code_pos = imagesearch("photo/msg_verify_code.bmp", precision=0.9)
-        logging.debug(f"Image search result: {verify_code_pos}")
-
-        if verify_code_pos[0] != -1:
-            logging.debug("Verify code needed")
-
-            x, y = verify_code_pos
-            logging.debug(f"Verify code position: {x}, {y}")
-
-            width = 30
-            height = 15
-
-            # Capture the image of the verification code area
-            bbox = (x, y + 20, x + width, y + 20 + height)
-            screenshot = ImageGrab.grab(bbox)
-            logging.debug(f"Screenshotted area: {bbox}")
-
-            # Convert the image to grayscale
-            gray_image = screenshot.convert('L')
-            logging.debug("Image converted to grayscale")
-
-            # Convert the PIL image to a NumPy array
-            gray_image_np = np.array(gray_image)
-            logging.debug("Image converted to NumPy array")
-
-            # You can add other languages as needed, such as 'ch_sim' for Chinese recognition
-            reader = easyocr.Reader(['en'])
-            logging.debug("Initialized EasyOCR reader")
-
-            result = reader.readtext(gray_image_np)
-            logging.debug(f"OCR result: {result}")
-
-            if result:
-                verify_code_text = result[0][1]
-                logging.debug(f"Recognized verify code: {verify_code_text}")
-                self._send_key(verify_code_text)
-                self._send_key("{ENTER}")
-            else:
-                logging.warning("No text recognized")
-
     def _enable_auto_attack(self):
         logging.info("enable auto attack")
         self._send_key("=")
@@ -185,6 +142,13 @@ class ROTask():
             time.sleep(0.5)
 
         self._send_key("{SPACE}", clicks=2)
+
+    def _try_to_move_pos(self):
+        logging.info("no fire lake npc and try to move")
+        npc_ghost_captain_pos = imagesearch("photo/npc_ghost_captain.bmp", precision=0.92)
+        if npc_ghost_captain_pos[0] != -1:
+            self._mouse_click(npc_ghost_captain_pos[0]-20, npc_ghost_captain_pos[1], button="left", clicks=1)
+            self._send_key("{SPACE}")
 
     def _enter_fire_lake_mission(self, check_image_path):
         logging.info("enter fire lake mission")
@@ -206,11 +170,7 @@ class ROTask():
                 self._send_key("{SPACE}")
 
             else:
-                logging.info("no fire lake npc and try to move")
-                npc_ghost_captain_pos = imagesearch("photo/npc_ghost_captain.bmp", precision=0.92)
-                if npc_ghost_captain_pos[0] != -1:
-                    self._mouse_click(npc_ghost_captain_pos[0]-20, npc_ghost_captain_pos[1], button="left", clicks=1)
-                    self._send_key("{SPACE}")
+                self._try_to_move_pos()
 
             time.sleep(1)
             player_in_fire_lake_map_pos = imagesearch(check_image_path, precision=0.92)
@@ -235,6 +195,12 @@ class ROTask():
             else:
                 logging.error("no tp npc and run @load")
                 self._send_key("-")
+
+    def _get_player_map_info_area(self):
+        player_me_icon_pos = imagesearch("photo/player_me_icon.bmp", precision=0.92)
+        logging.debug(f"player_me_icon_pos: {player_me_icon_pos}")
+        bbox = (player_me_icon_pos[0]-212, player_me_icon_pos[1]-22, player_me_icon_pos[0]+45, player_me_icon_pos[1]+15)
+        return bbox
 
     def make_money(self):
         """ this script is used to make money in the game
@@ -396,6 +362,37 @@ class ROTask():
                 logging.debug("not in fire lake tower map")
         time.sleep(2)
 
+    def make_life_palce(self):
+        player_C0per_in_life_palace_pos = imagesearch("photo/npc_life_palace.bmp", precision=0.92)
+        logging.debug(f"player_C0per_in_life_palace_pos: {player_C0per_in_life_palace_pos}")
+        if player_C0per_in_life_palace_pos[0] != -1:
+            self.enter_mission("life_palace")
+            time.sleep(1)
+
+
+        player_in_life_palce_map_pos = imagesearch("photo/player_in_life_palce_map.bmp", precision=0.92)
+        if player_in_life_palce_map_pos[0] != -1:
+            player_hp_pos = imagesearch("photo/player_hp.bmp", precision=0.92)
+            if player_hp_pos[0] != -1:
+                npc_pos = (player_hp_pos[0]+30, player_hp_pos[1]-120)
+                self._mouse_click(npc_pos[0], npc_pos[1], button="right", clicks=2)
+                self._send_key("{SPACE}", clicks=4)
+                time.sleep(0.3)
+
+                start_time = time.time()
+                while True:
+                    if time.time() - start_time > self.loop_timeout_sec:
+                        logging.debug("Timeout reached, exiting loop.")
+                        break
+                    if self._check_verify_code_with_api():
+                        break
+
+                self._send_key("w")
+
+        if player_C0per_in_life_palace_pos[0] == -1 and player_in_life_palce_map_pos[0] == -1:
+            self._try_to_move_pos()
+        time.sleep(2)
+
     def make_soul(self):
         def _sell_soul():
             for i in range(1, 3):
@@ -436,8 +433,15 @@ class ROTask():
         time.sleep(2)
 
     def enter_mission(self, map_name):
-        target_pos = imagesearch(f"photo/npc_{map_name}.bmp", precision=0.92)
-        player_tiler_in_unknow_map_pos = imagesearch("photo/player_tiler_in_unknow_map.bmp", precision=0.92)
-        if target_pos[0] != -1 and player_tiler_in_unknow_map_pos[0] != -1:
+        target_pos = imagesearch(f"photo/npc_{map_name}.bmp", precision=0.9)
+        logging.debug(f"target_pos: {target_pos}")
+
+
+        bbox = self._get_player_map_info_area()
+        player_in_unknow_map_pos = imagesearcharea("photo/player_in_unknow_map.bmp", bbox[0], bbox[1], bbox[2], bbox[3], precision=0.92)
+        logging.debug(f"player_in_unknow_map_pos: {player_in_unknow_map_pos}")
+
+        if target_pos[0] != -1 and player_in_unknow_map_pos[0] != -1:
             self._mouse_click(target_pos[0]+50, target_pos[1]+45, button="right", clicks=2)
+            time.sleep(0.2)
             self._send_key("{SPACE}", clicks=2)

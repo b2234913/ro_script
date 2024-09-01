@@ -56,14 +56,16 @@ if "%task_choice%"=="1" (
 ) else if "%task_choice%"=="2" (
     set task=make_fire_lake
 ) else if "%task_choice%"=="3" (
-    set task=make_soul
+    set task=make_life_palce
 ) else if "%task_choice%"=="4" (
-    set task=enter_fire_lake
+    set task=make_soul
 ) else if "%task_choice%"=="5" (
-    set task=enter_king_gym
+    set task=enter_fire_lake
 ) else if "%task_choice%"=="6" (
-    set task=enter_bad_gym
+    set task=enter_king_gym
 ) else if "%task_choice%"=="7" (
+    set task=enter_bad_gym
+) else if "%task_choice%"=="8" (
     set task=enter_bad_dark
 ) else (
     echo Invalid choice.
